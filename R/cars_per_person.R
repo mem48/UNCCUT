@@ -67,17 +67,18 @@ summary(res)
 # Categorise areas a population rising/steady/falling
 # Steady has gradient between 5 and -5
 
-foo <- res[res$gradient > -0.001 & res$gradient < 0.001 , ]
+foo <- res[res$gradient > -0.0001 & res$gradient < 0.0001 , ]
 foo <- foo[1:170,]
 
 ggplot(foo, aes(year, population, color = code)) +
   geom_line(lwd = 2)
 
 res$gradient_class <- "steady"
-res$gradient_class <- ifelse(res$gradient > 0.001, "rising", res$gradient_class)
-res$gradient_class <- ifelse(res$gradient < -0.001, "falling", res$gradient_class)
+res$gradient_class <- ifelse(res$gradient > 0.0001, "rising", res$gradient_class)
+res$gradient_class <- ifelse(res$gradient < -0.0001, "falling", res$gradient_class)
 
 table(res$gradient_class)
+
 
 # Categorise as linear or non-linear
 
@@ -120,6 +121,27 @@ res_summary$bna_range <- res_summary$bna_max - res_summary$bna_min
 res_summary$bna_class <- "slight-step"
 res_summary$bna_class <- ifelse(res_summary$bna_range > 200, "stepped", res_summary$bna_class)
 res_summary$bna_class <- ifelse(res_summary$bna_range < 50, "no-step", res_summary$bna_class)
+
+
+
+res_summary$gradient_class1 <- "steady"
+res_summary$gradient_class1 <- ifelse(res_summary$gradient1 > 0.01, "rising", res_summary$gradient_class1)
+res_summary$gradient_class1 <- ifelse(res_summary$gradient1 < -0.01, "falling", res_summary$gradient_class1)
+table(res_summary$gradient_class1)
+
+res_summary$gradient_class2 <- "steady"
+res_summary$gradient_class2 <- ifelse(res_summary$gradient2 > 0.01, "rising", res_summary$gradient_class2)
+res_summary$gradient_class2 <- ifelse(res_summary$gradient2 < -0.01, "falling", res_summary$gradient_class2)
+table(res_summary$gradient_class2)
+
+res_summary$gradient_class3 <- "steady"
+res_summary$gradient_class3 <- ifelse(res_summary$gradient3 > 0.01, "rising", res_summary$gradient_class3)
+res_summary$gradient_class3 <- ifelse(res_summary$gradient3 < -0.01, "falling", res_summary$gradient_class3)
+table(res_summary$gradient_class3)
+
+res_summary$gradient_class123 <- paste0(res_summary$gradient_class1," ",res_summary$gradient_class2," ",res_summary$gradient_class3)
+table(res_summary$gradient_class123)
+
 
 
 # foo <- res_summary$code[res_summary$bna_range > 200]
@@ -175,4 +197,66 @@ for(i in 1:nrow(types)){
 }
 
 
+types = as.data.frame(table(res_summary$gradient_class123))
+
+for(i in 1:nrow(types)){
+  type = types$Var1[i]
+  
+  foo <- res[res$code %in% res_summary$code[res_summary$gradient_class123 == type] , ]
+  if(length(unique(foo$code)) > 20){
+    ids <- sample(unique(foo$code), 20)
+    foo <- foo[foo$code %in% ids,]
+  }
+  ggplot(foo, aes(year, population, color = code)) +
+    geom_line(lwd = 2) +
+    ggtitle(type)
+  ggsave(paste0("plots/pop_type_",gsub(" ","_",type),".png"))
+}
+
+
 # Rising Linear No-Step
+
+res_summary$pop_change <- res_summary$pop_max - res_summary$pop_min
+summary(res_summary$pop_change)
+
+res_summary$pop_change_class <- ifelse(res_summary$pop_change < 200, "small", "large")
+
+res_summary$pop_gradient_class <- paste0(res_summary$pop_change_class," ",res_summary$gradient_class123)
+
+
+types = as.data.frame(table(res_summary$pop_gradient_class))
+
+
+res_summary$desc <- "other"
+
+res_summary$desc <- ifelse(res_summary$pop_change_class == "small", "No significant change in population", res_summary$desc)
+res_summary$desc <- ifelse(res_summary$pop_gradient_class == "large rising rising rising", "Continuous growth", res_summary$desc)
+res_summary$desc <- ifelse(res_summary$pop_gradient_class == "large falling falling falling", "Continuous decline", res_summary$desc)
+res_summary$desc <- ifelse(res_summary$pop_gradient_class %in%  c("large steady rising rising","large steady steady rising"), "Growth with delayed start", res_summary$desc)
+res_summary$desc <- ifelse(res_summary$pop_gradient_class %in%  c("large rising rising steady","large rising steady steady","large steady rising steady"), "Growth which has stopped", res_summary$desc)
+res_summary$desc <- ifelse(res_summary$pop_gradient_class ==  "large rising steady rising", "Growth with as pause", res_summary$desc)
+res_summary$desc <- ifelse(res_summary$pop_gradient_class ==  "large steady steady steady", "Large change with no trend", res_summary$desc)
+res_summary$desc <- ifelse(res_summary$pop_gradient_class %in%  c("large falling rising rising","large falling falling rising","large falling steady rising"), "Falling then rising", res_summary$desc)
+res_summary$desc <- ifelse(res_summary$pop_gradient_class %in%  c("large rising rising falling","large rising falling falling","large rising steady falling"), "Rising then falling", res_summary$desc)
+res_summary$desc <- ifelse(res_summary$pop_gradient_class %in%  c("large steady falling falling","large steady steady falling"), "Falling with delayed start", res_summary$desc)
+res_summary$desc <- ifelse(res_summary$pop_gradient_class %in%  c("large falling falling steady","large falling steady steady","large steady falling steady"), "Falling which has stopped", res_summary$desc)
+
+
+
+table(res_summary$pop_gradient_class[res_summary$desc == "other"])
+
+
+saveRDS(res_summary,"data/population/population_trends.Rds")
+
+
+bounds <- st_read("data/LSOA_bounds_simplified.gpkg")
+
+foo <- left_join(bounds, res_summary, by = c("geo_code" = "code"))
+foo <- foo[!is.na(foo$desc),]
+foo <- foo[foo$desc != "No significant change in population",]
+
+library(tmap)
+tmap_mode("view")
+tm_shape(foo) +
+  tm_fill("desc")
+
