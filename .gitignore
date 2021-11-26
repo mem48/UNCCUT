@@ -37,3 +37,13 @@ vignettes/*.pdf
 
 # R Environment Variables
 .Renviron
+data/population/pop2002-2011.zip
+data/population/pop2011.zip
+data/population/pop2012.zip
+data/population/pop2013.zip
+data/population/pop2014.zip
+data/population/pop2015.zip
+data/population/pop2016.zip
+data/population/pop2017.zip
+data/population/pop2018.zip
+data/population/sape22dt2mid2019lsoasyoaestimatesunformatted.zip
