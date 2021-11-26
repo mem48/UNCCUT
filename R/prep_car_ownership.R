@@ -27,6 +27,9 @@ dat_ave$LSOA <- "Average"
 
 dat <- rbind(dat, dat_ave)
 
+saveRDS(dat,"data/LSOA_total_cars_2001_2018_long.Rds")
+
+
 dat_wide <- pivot_wider(dat, 
                         id_cols = "LSOA",
                         names_from = "year", 

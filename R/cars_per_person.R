@@ -1,12 +1,12 @@
-# COnvert Cars into cars per person
-library(dplyr)
+# Calculate cars per person
+library(sf)
 library(tidyr)
-library(ggplot2)
-
-# Population data
+library(dplyr)
 
 pop_all <- readRDS("data/population/LSOA_population_2002_2018.Rds")
+cars_all <- readRDS("data/LSOA_total_cars_2001_2018_long.Rds")
 
+<<<<<<< Updated upstream
 # Classify Population Change
 pop_all <- pivot_longer(pop_all, cols = names(pop_all)[2:18], names_to = "year")
 pop_all$year <- as.numeric(gsub("pop_","", pop_all$year))
@@ -179,24 +179,22 @@ table(res_summary$gradient_class123)
 res_summary$all_class <- paste0(res_summary$gradient_class," ",
                                 res_summary$linear_class," ",
                                 res_summary$bna_class)
+=======
+pop_all <- pivot_longer(pop_all, cols = starts_with("pop_"), 
+                        names_to = "year", 
+                        names_prefix = "pop_",
+                        values_to = "population")
+>>>>>>> Stashed changes
 
-types = as.data.frame(table(res_summary$all_class))
+cars_all <- cars_all[cars_all$year > 2001,]
+pop_all$year <- as.integer(pop_all$year)
 
-for(i in 1:nrow(types)){
-  type = types$Var1[i]
-  
-  foo <- res[res$code %in% res_summary$code[res_summary$all_class == type] , ]
-  if(length(unique(foo$code)) > 20){
-    ids <- sample(unique(foo$code), 20)
-    foo <- foo[foo$code %in% ids,]
-  }
-  ggplot(foo, aes(year, population, color = code)) +
-    geom_line(lwd = 2) +
-    ggtitle(type)
-  ggsave(paste0("plots/pop_type_",gsub(" ","_",type),".png"))
-}
+all <- left_join(pop_all, cars_all, by = c("code" = "LSOA", "year" = "year"))
+all$cars_per_person <- all$AllCars / all$population
 
+summary(all$cars_per_person)
 
+<<<<<<< Updated upstream
 types = as.data.frame(table(res_summary$gradient_class123))
 
 for(i in 1:nrow(types)){
@@ -260,3 +258,6 @@ tmap_mode("view")
 tm_shape(foo) +
   tm_fill("desc")
 
+=======
+saveRDS(all, "data/LSOA_cars_per_person_2002_2018_long.Rds")
+>>>>>>> Stashed changes
