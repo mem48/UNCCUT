@@ -274,7 +274,7 @@ table(res_summary$desc_pop)
 
 res_summary$desc_cars <- "other"
 
-res_summary$desc_cars <- ifelse(res_summary$pop_change_class == "small", "No significant change in carspp", res_summary$desc_cars)
+res_summary$desc_cars <- ifelse(res_summary$cars_change_class == "small", "No significant change in carspp", res_summary$desc_cars)
 res_summary$desc_cars <- ifelse(res_summary$combined_class_cars == "large rising rising rising", "Continuous growth", res_summary$desc_cars)
 res_summary$desc_cars <- ifelse(res_summary$combined_class_cars == "large falling falling falling", "Continuous decline", res_summary$desc_cars)
 res_summary$desc_cars <- ifelse(res_summary$combined_class_cars %in%  c("large steady rising rising","large steady steady rising"), "Growth with delayed start", res_summary$desc_cars)
@@ -289,4 +289,12 @@ res_summary$desc_cars <- ifelse(res_summary$combined_class_cars %in%  c("large f
 table(res_summary$desc_cars)
 
 saveRDS(res_summary,"data/lsoa_carpp_pop_classifications.Rds")
+
+
+foo <- res_summary$code[res_summary$desc_cars == "Falling with delayed start"]
+foo <- res[res$code %in% foo, ]
+foo <- foo[1:340,]
+
+ggplot(foo, aes(year, cars_per_person, color = code)) +
+  geom_line(lwd = 2)
 
