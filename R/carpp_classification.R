@@ -80,10 +80,10 @@ res <- pbapply::pblapply(all_split, function(x){
   
   sd_after_cars <- sapply(1:16, function(i,pop){
     sd(c(pop[i],pop[i+1]))
-  }, pop = x$population_scale)
+  }, pop = x$carspp_scale)
   sd_before_cars <- sapply(2:17, function(i,pop){
     sd(c(pop[i],pop[i-1]))
-  }, pop = x$population_scale)
+  }, pop = x$carspp_scale)
   x$sd_after_cars <- c(sd_after_cars,NA)
   x$sd_before_cars <- c(NA,sd_before_cars)
   x$sd_bna_cars <- x$sd_after_cars + x$sd_before_cars
@@ -140,6 +140,9 @@ res_summary <- res %>%
   summarise(pop_min = min(population),
             pop_max = max(population),
             pop_sd = sd(population),
+            carpp_min = min(cars_per_person, na.rm = TRUE),
+            carpp_max = max(cars_per_person, na.rm = TRUE),
+            carpp_sd = sd(cars_per_person, na.rm = TRUE),
             gradient_pop = gradient_pop[1],
             gradient_cars = gradient_cars[1],
             rsquare_pop  = rsquare_pop[1],
@@ -175,12 +178,24 @@ res_summary$bna_range_cars <- res_summary$bna_cars_max - res_summary$bna_cars_mi
 # large bna range should indicate step chagne??
 
 res_summary$bna_pop_class <- "slight-step"
-res_summary$bna_pop_class <- ifelse(res_summary$bna_range_pop > 200, "stepped", res_summary$bna_pop_class)
-res_summary$bna_pop_class <- ifelse(res_summary$bna_range_pop < 50, "no-step", res_summary$bna_pop_class)
+res_summary$bna_pop_class <- ifelse(res_summary$bna_range_pop > 0.2, "stepped", res_summary$bna_pop_class)
+res_summary$bna_pop_class <- ifelse(res_summary$bna_range_pop < 0.05, "no-step", res_summary$bna_pop_class)
 
 res_summary$bna_cars_class <- "slight-step"
-res_summary$bna_cars_class <- ifelse(res_summary$bna_range_cars > 200, "stepped", res_summary$bna_cars_class)
-res_summary$bna_cars_class <- ifelse(res_summary$bna_range_cars < 50, "no-step", res_summary$bna_cars_class)
+res_summary$bna_cars_class <- ifelse(res_summary$bna_range_cars > 0.2, "stepped", res_summary$bna_cars_class)
+res_summary$bna_cars_class <- ifelse(res_summary$bna_range_cars < 0.05, "no-step", res_summary$bna_cars_class)
+
+foo <- res_summary$code[res_summary$bna_range_cars < 0.05]
+foo <- res[res$code %in% foo, ]
+foo <- foo[foo$gradient_cars < 0,]
+foo <- foo[1:340,]
+
+
+ggplot(foo, aes(year, cars_per_person, color = code)) +
+  geom_line(lwd = 2)
+
+
+
 
 
 # Combine classes
@@ -190,18 +205,88 @@ res_summary$all_pop_class <- paste0(res_summary$gradient_pop_class," ",
 
 types = as.data.frame(table(res_summary$all_class))
 
-for(i in 1:nrow(types)){
-  type = types$Var1[i]
-  
-  foo <- res[res$code %in% res_summary$code[res_summary$all_class == type] , ]
-  if(length(unique(foo$code)) > 20){
-    ids <- sample(unique(foo$code), 20)
-    foo <- foo[foo$code %in% ids,]
-  }
-  ggplot(foo, aes(year, population, color = code)) +
-    geom_line(lwd = 2) +
-    ggtitle(type)
-  ggsave(paste0("plots/pop_type_",gsub(" ","_",type),".png"))
-}
+res_summary$gradient_class1_pop <- "steady"
+res_summary$gradient_class1_pop <- ifelse(res_summary$gradient1_pop > 0.01, "rising", res_summary$gradient_class1_pop)
+res_summary$gradient_class1_pop <- ifelse(res_summary$gradient1_pop < -0.01, "falling", res_summary$gradient_class1_pop)
+table(res_summary$gradient_class1_pop)
 
+res_summary$gradient_class2_pop <- "steady"
+res_summary$gradient_class2_pop <- ifelse(res_summary$gradient2_pop > 0.01, "rising", res_summary$gradient_class2_pop)
+res_summary$gradient_class2_pop <- ifelse(res_summary$gradient2_pop < -0.01, "falling", res_summary$gradient_class2_pop)
+table(res_summary$gradient_class2_pop)
+
+res_summary$gradient_class3_pop <- "steady"
+res_summary$gradient_class3_pop <- ifelse(res_summary$gradient3_pop > 0.01, "rising", res_summary$gradient_class3_pop)
+res_summary$gradient_class3_pop <- ifelse(res_summary$gradient3_pop < -0.01, "falling", res_summary$gradient_class3_pop)
+table(res_summary$gradient_class3_pop)
+
+res_summary$gradient_class123_pop <- paste0(res_summary$gradient_class1_pop," ",res_summary$gradient_class2_pop," ",res_summary$gradient_class3_pop)
+table(res_summary$gradient_class123_pop)
+
+
+
+res_summary$gradient_class1_cars <- "steady"
+res_summary$gradient_class1_cars <- ifelse(res_summary$gradient1_cars > 0.01, "rising", res_summary$gradient_class1_cars)
+res_summary$gradient_class1_cars <- ifelse(res_summary$gradient1_cars < -0.01, "falling", res_summary$gradient_class1_cars)
+table(res_summary$gradient_class1_cars)
+
+res_summary$gradient_class2_cars <- "steady"
+res_summary$gradient_class2_cars <- ifelse(res_summary$gradient2_cars > 0.01, "rising", res_summary$gradient_class2_cars)
+res_summary$gradient_class2_cars <- ifelse(res_summary$gradient2_cars < -0.01, "falling", res_summary$gradient_class2_cars)
+table(res_summary$gradient_class2_cars)
+
+res_summary$gradient_class3_cars <- "steady"
+res_summary$gradient_class3_cars <- ifelse(res_summary$gradient3_cars > 0.01, "rising", res_summary$gradient_class3_cars)
+res_summary$gradient_class3_cars <- ifelse(res_summary$gradient3_cars < -0.01, "falling", res_summary$gradient_class3_cars)
+table(res_summary$gradient_class3_cars)
+
+res_summary$gradient_class123_cars <- paste0(res_summary$gradient_class1_cars," ",res_summary$gradient_class2_cars," ",res_summary$gradient_class3_cars)
+table(res_summary$gradient_class123_cars)
+
+res_summary$pop_change <- res_summary$pop_max - res_summary$pop_min
+summary(res_summary$pop_change)
+
+res_summary$carpp_change <- res_summary$carpp_max - res_summary$carpp_min
+summary(res_summary$carpp_change)
+
+res_summary$pop_change_class <- ifelse(res_summary$pop_change < 200, "small", "large")
+res_summary$cars_change_class <- ifelse(res_summary$carpp_change < 0.3, "small", "large")
+
+
+res_summary$combined_class_pop <- paste0(res_summary$pop_change_class," ",res_summary$gradient_class123_pop)
+res_summary$combined_class_cars <- paste0(res_summary$cars_change_class," ",res_summary$gradient_class123_cars)
+
+res_summary$desc_pop <- "other"
+
+res_summary$desc_pop <- ifelse(res_summary$pop_change_class == "small", "No significant change in population", res_summary$desc_pop)
+res_summary$desc_pop <- ifelse(res_summary$combined_class_pop == "large rising rising rising", "Continuous growth", res_summary$desc_pop)
+res_summary$desc_pop <- ifelse(res_summary$combined_class_pop == "large falling falling falling", "Continuous decline", res_summary$desc_pop)
+res_summary$desc_pop <- ifelse(res_summary$combined_class_pop %in%  c("large steady rising rising","large steady steady rising"), "Growth with delayed start", res_summary$desc_pop)
+res_summary$desc_pop <- ifelse(res_summary$combined_class_pop %in%  c("large rising rising steady","large rising steady steady","large steady rising steady"), "Growth which has stopped", res_summary$desc_pop)
+res_summary$desc_pop <- ifelse(res_summary$combined_class_pop ==  "large rising steady rising", "Growth with as pause", res_summary$desc_pop)
+res_summary$desc_pop <- ifelse(res_summary$combined_class_pop ==  "large steady steady steady", "Large change with no trend", res_summary$desc_pop)
+res_summary$desc_pop <- ifelse(res_summary$combined_class_pop %in%  c("large falling rising rising","large falling falling rising","large falling steady rising"), "Falling then rising", res_summary$desc_pop)
+res_summary$desc_pop <- ifelse(res_summary$combined_class_pop %in%  c("large rising rising falling","large rising falling falling","large rising steady falling"), "Rising then falling", res_summary$desc_pop)
+res_summary$desc_pop <- ifelse(res_summary$combined_class_pop %in%  c("large steady falling falling","large steady steady falling"), "Falling with delayed start", res_summary$desc_pop)
+res_summary$desc_pop <- ifelse(res_summary$combined_class_pop %in%  c("large falling falling steady","large falling steady steady","large steady falling steady"), "Falling which has stopped", res_summary$desc_pop)
+
+table(res_summary$desc_pop)
+
+res_summary$desc_cars <- "other"
+
+res_summary$desc_cars <- ifelse(res_summary$pop_change_class == "small", "No significant change in carspp", res_summary$desc_cars)
+res_summary$desc_cars <- ifelse(res_summary$combined_class_cars == "large rising rising rising", "Continuous growth", res_summary$desc_cars)
+res_summary$desc_cars <- ifelse(res_summary$combined_class_cars == "large falling falling falling", "Continuous decline", res_summary$desc_cars)
+res_summary$desc_cars <- ifelse(res_summary$combined_class_cars %in%  c("large steady rising rising","large steady steady rising"), "Growth with delayed start", res_summary$desc_cars)
+res_summary$desc_cars <- ifelse(res_summary$combined_class_cars %in%  c("large rising rising steady","large rising steady steady","large steady rising steady"), "Growth which has stopped", res_summary$desc_cars)
+res_summary$desc_cars <- ifelse(res_summary$combined_class_cars ==  "large rising steady rising", "Growth with as pause", res_summary$desc_cars)
+res_summary$desc_cars <- ifelse(res_summary$combined_class_cars ==  "large steady steady steady", "Large change with no trend", res_summary$desc_cars)
+res_summary$desc_cars <- ifelse(res_summary$combined_class_cars %in%  c("large falling rising rising","large falling falling rising","large falling steady rising"), "Falling then rising", res_summary$desc_cars)
+res_summary$desc_cars <- ifelse(res_summary$combined_class_cars %in%  c("large rising rising falling","large rising falling falling","large rising steady falling"), "Rising then falling", res_summary$desc_cars)
+res_summary$desc_cars <- ifelse(res_summary$combined_class_cars %in%  c("large steady falling falling","large steady steady falling"), "Falling with delayed start", res_summary$desc_cars)
+res_summary$desc_cars <- ifelse(res_summary$combined_class_cars %in%  c("large falling falling steady","large falling steady steady","large steady falling steady"), "Falling which has stopped", res_summary$desc_cars)
+
+table(res_summary$desc_cars)
+
+saveRDS(res_summary,"data/lsoa_carpp_pop_classifications.Rds")
 
