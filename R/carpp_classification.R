@@ -256,39 +256,115 @@ res_summary$cars_change_class <- ifelse(res_summary$carpp_change < 0.3, "small",
 res_summary$combined_class_pop <- paste0(res_summary$pop_change_class," ",res_summary$gradient_class123_pop)
 res_summary$combined_class_cars <- paste0(res_summary$cars_change_class," ",res_summary$gradient_class123_cars)
 
-res_summary$desc_pop <- "other"
+res_summary$desc_pop <- "Other"
 
-res_summary$desc_pop <- ifelse(res_summary$pop_change_class == "small", "No significant change in population", res_summary$desc_pop)
+res_summary$desc_pop <- ifelse(res_summary$pop_change_class == "small", "No significant change", res_summary$desc_pop)
 res_summary$desc_pop <- ifelse(res_summary$combined_class_pop == "large rising rising rising", "Continuous growth", res_summary$desc_pop)
 res_summary$desc_pop <- ifelse(res_summary$combined_class_pop == "large falling falling falling", "Continuous decline", res_summary$desc_pop)
 res_summary$desc_pop <- ifelse(res_summary$combined_class_pop %in%  c("large steady rising rising","large steady steady rising"), "Growth with delayed start", res_summary$desc_pop)
 res_summary$desc_pop <- ifelse(res_summary$combined_class_pop %in%  c("large rising rising steady","large rising steady steady","large steady rising steady"), "Growth which has stopped", res_summary$desc_pop)
-res_summary$desc_pop <- ifelse(res_summary$combined_class_pop ==  "large rising steady rising", "Growth with as pause", res_summary$desc_pop)
+res_summary$desc_pop <- ifelse(res_summary$combined_class_pop ==  "large rising steady rising", "Growth with a pause", res_summary$desc_pop)
 res_summary$desc_pop <- ifelse(res_summary$combined_class_pop ==  "large steady steady steady", "Large change with no trend", res_summary$desc_pop)
-res_summary$desc_pop <- ifelse(res_summary$combined_class_pop %in%  c("large falling rising rising","large falling falling rising","large falling steady rising"), "Falling then rising", res_summary$desc_pop)
-res_summary$desc_pop <- ifelse(res_summary$combined_class_pop %in%  c("large rising rising falling","large rising falling falling","large rising steady falling"), "Rising then falling", res_summary$desc_pop)
-res_summary$desc_pop <- ifelse(res_summary$combined_class_pop %in%  c("large steady falling falling","large steady steady falling"), "Falling with delayed start", res_summary$desc_pop)
-res_summary$desc_pop <- ifelse(res_summary$combined_class_pop %in%  c("large falling falling steady","large falling steady steady","large steady falling steady"), "Falling which has stopped", res_summary$desc_pop)
+res_summary$desc_pop <- ifelse(res_summary$combined_class_pop %in%  c("large falling rising rising","large falling falling rising","large falling steady rising"), "Decline then growth", res_summary$desc_pop)
+res_summary$desc_pop <- ifelse(res_summary$combined_class_pop %in%  c("large rising rising falling","large rising falling falling","large rising steady falling"), "Growth then decline", res_summary$desc_pop)
+res_summary$desc_pop <- ifelse(res_summary$combined_class_pop %in%  c("large steady falling falling","large steady steady falling"), "Decline with delayed start", res_summary$desc_pop)
+res_summary$desc_pop <- ifelse(res_summary$combined_class_pop %in%  c("large falling falling steady","large falling steady steady","large steady falling steady"), "Decline which has stopped", res_summary$desc_pop)
 
 table(res_summary$desc_pop)
 
-res_summary$desc_cars <- "other"
+res_summary$desc_cars <- "Other"
 
-res_summary$desc_cars <- ifelse(res_summary$cars_change_class == "small", "No significant change in carspp", res_summary$desc_cars)
+res_summary$desc_cars <- ifelse(res_summary$cars_change_class == "small", "No significant change", res_summary$desc_cars)
 res_summary$desc_cars <- ifelse(res_summary$combined_class_cars == "large rising rising rising", "Continuous growth", res_summary$desc_cars)
 res_summary$desc_cars <- ifelse(res_summary$combined_class_cars == "large falling falling falling", "Continuous decline", res_summary$desc_cars)
 res_summary$desc_cars <- ifelse(res_summary$combined_class_cars %in%  c("large steady rising rising","large steady steady rising"), "Growth with delayed start", res_summary$desc_cars)
 res_summary$desc_cars <- ifelse(res_summary$combined_class_cars %in%  c("large rising rising steady","large rising steady steady","large steady rising steady"), "Growth which has stopped", res_summary$desc_cars)
-res_summary$desc_cars <- ifelse(res_summary$combined_class_cars ==  "large rising steady rising", "Growth with as pause", res_summary$desc_cars)
+res_summary$desc_cars <- ifelse(res_summary$combined_class_cars ==  "large rising steady rising", "Growth with a pause", res_summary$desc_cars)
 res_summary$desc_cars <- ifelse(res_summary$combined_class_cars ==  "large steady steady steady", "Large change with no trend", res_summary$desc_cars)
-res_summary$desc_cars <- ifelse(res_summary$combined_class_cars %in%  c("large falling rising rising","large falling falling rising","large falling steady rising"), "Falling then rising", res_summary$desc_cars)
-res_summary$desc_cars <- ifelse(res_summary$combined_class_cars %in%  c("large rising rising falling","large rising falling falling","large rising steady falling"), "Rising then falling", res_summary$desc_cars)
-res_summary$desc_cars <- ifelse(res_summary$combined_class_cars %in%  c("large steady falling falling","large steady steady falling"), "Falling with delayed start", res_summary$desc_cars)
-res_summary$desc_cars <- ifelse(res_summary$combined_class_cars %in%  c("large falling falling steady","large falling steady steady","large steady falling steady"), "Falling which has stopped", res_summary$desc_cars)
+res_summary$desc_cars <- ifelse(res_summary$combined_class_cars %in%  c("large falling rising rising","large falling falling rising","large falling steady rising"), "Decline then growth", res_summary$desc_cars)
+res_summary$desc_cars <- ifelse(res_summary$combined_class_cars %in%  c("large rising rising falling","large rising falling falling","large rising steady falling"), "Growth then decline", res_summary$desc_cars)
+res_summary$desc_cars <- ifelse(res_summary$combined_class_cars %in%  c("large steady falling falling","large steady steady falling"), "Decline with delayed start", res_summary$desc_cars)
+res_summary$desc_cars <- ifelse(res_summary$combined_class_cars %in%  c("large falling falling steady","large falling steady steady","large steady falling steady"), "Decline which has stopped", res_summary$desc_cars)
 
 table(res_summary$desc_cars)
 
 saveRDS(res_summary,"data/lsoa_carpp_pop_classifications.Rds")
+
+library(ggplot2)
+
+re_tab <- as.data.frame(table(res_summary$desc_pop))
+re_tab <- re_tab[order(re_tab$Var1),]
+
+ggplot(re_tab, aes(x="", y = Freq, fill=Var1))+
+  geom_bar(width = 1, stat = "identity") +
+  coord_polar("y", start=0) +
+  theme(panel.background = element_blank(),
+        axis.text.x=element_blank(),
+        axis.title.x=element_blank(),
+        axis.title.y=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.ticks.y=element_blank(),
+        axis.text.y=element_blank()) +
+  scale_fill_manual(values=c("#006d2c", "#a50f15", "#31a354",
+                             "#74c476", "#bae4b3", "#de2d26",
+                             "#fb6a4a", "#fcae91", "#fee5d9",
+                             "yellow", "grey", "purple")) +
+  guides(fill=guide_legend(title="Population Classification"))
+ggsave("plots/pie_population_class.png")
+  
+re_tab <- as.data.frame(table(res_summary$desc_cars))
+re_tab <- re_tab[order(re_tab$Var1),]
+
+ggplot(re_tab, aes(x="", y = Freq, fill=Var1))+
+  geom_bar(width = 1, stat = "identity") +
+  coord_polar("y", start=0) +
+  theme(panel.background = element_blank(),
+        axis.text.x=element_blank(),
+        axis.title.x=element_blank(),
+        axis.title.y=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.ticks.y=element_blank(),
+        axis.text.y=element_blank()) +
+  scale_fill_manual(values=c("#006d2c", "#a50f15", "#31a354",
+                             "#74c476", "#bae4b3", "#de2d26",
+                             "#fb6a4a", "#fcae91", "#fee5d9",
+                             "yellow", "grey", "purple")) +
+  guides(fill=guide_legend(title="Cars per person Classification"))
+ggsave("plots/pie_carpp_class.png")
+
+re_tab <- re_tab[order(re_tab$Var1),]
+
+ggplot(re_tab[re_tab$Var1 != "No significant change",], aes(x="", y = Freq, fill=Var1))+
+  geom_bar(width = 1, stat = "identity") +
+  coord_polar("y", start=0) +
+  theme(panel.background = element_blank(),
+        axis.text.x=element_blank(),
+        axis.title.x=element_blank(),
+        axis.title.y=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.ticks.y=element_blank(),
+        axis.text.y=element_blank()) +
+  scale_fill_manual(values=c("#006d2c", "#a50f15", "#31a354",
+                             "#74c476", "#bae4b3", "#de2d26",
+                             "#fb6a4a", "#fcae91", "#fee5d9",
+                             "yellow", "purple")) +
+  guides(fill=guide_legend(title="Cars per person Classification"))
+ggsave("plots/pie_carpp_class_change_only.png")
+
+library(dplyr)
+headline <- res_summary %>%
+  group_by(desc_cars) %>%
+  summarise(carpp_change_max = max(carpp_max - carpp_min, na.rm = TRUE),
+          carpp_change_min = min(carpp_max - carpp_min, na.rm = TRUE),
+          carpp_change_sd = sd(carpp_max - carpp_min, na.rm = TRUE),
+          carpp_change_mean = mean(carpp_max - carpp_min, na.rm = TRUE),
+          carpp_change_median = median(carpp_max - carpp_min, na.rm = TRUE),
+          carpp_percent_max = max((carpp_max - carpp_min) / carpp_max, na.rm = TRUE),
+          carpp_percent_min = min((carpp_max - carpp_min) / carpp_max, na.rm = TRUE),
+          carpp_percent_sd = sd((carpp_max - carpp_min) / carpp_max, na.rm = TRUE),
+          carpp_percent_mean = mean((carpp_max - carpp_min) / carpp_max, na.rm = TRUE),
+          carpp_percent_median = median((carpp_max - carpp_min) / carpp_max, na.rm = TRUE))
+
 
 
 foo <- res_summary$code[res_summary$desc_cars == "Falling with delayed start"]
