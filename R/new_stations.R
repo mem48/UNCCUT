@@ -24,4 +24,11 @@ names(dat) = c("stop","year","Lat","Lng")
 dat = st_as_sf(dat, coords = c("Lng","Lat"))
 qtm(dat, dots.col = "year")
 
+dat$Year <- factor(dat$year, levels = 2002:2018)
+
+tm_shape(dat) +
+  tm_dots(col = "Year",
+          n = 17,
+          palette = "Spectral" )
+
 st_write(dat,"data/new_stations.geojson")
