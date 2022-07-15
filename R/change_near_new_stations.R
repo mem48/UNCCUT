@@ -105,6 +105,15 @@ ggplot(all_summary_stop2, aes(x = year_offset, y = median, color = stop)) +
 ggsave("plots/change_stations_single.png", width = 210, height = 297, units = "mm")
 
 
+foo = all[all$cluster == "Nottingham Tram North",]
+ggplot(foo, aes(x = year, y = cars_per_person, color = code)) +
+  geom_line(size=1) +
+  ylab("Median cars per person") +
+  xlab("Year's since station opended") +
+  ylim(0,0.8)
+  guides(color=guide_legend(title="Station", ncol =1))
+
+
 # class_summary <- classif %>% 
 #   group_by(stop) %>%
 #   summarise(carpp_change_max = max(carpp_max - carpp_min, na.rm = TRUE),
