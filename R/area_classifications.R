@@ -48,6 +48,7 @@ all_summary_ru <- all %>%
 ggplot(all_summary_ru, aes(x = year, y = median, color = RUC11)) +
   geom_line(size=2) +
   ylab("Median cars per person") +
+  ylim(0.2,0.7) +
   xlab("Year") +
   guides(color=guide_legend(title="Rural/urban classification"))
 
@@ -97,6 +98,7 @@ ggplot(all_summary_oac, aes(x = year, y = median, color = SOAC11NM)) +
   geom_line(size=2) +
   ylab("Median cars per person") +
   xlab("Year") +
+  ylim(0.2,0.7) +
   guides(color=guide_legend(title="Area classification", ncol =1)) +
   scale_color_manual(values=cols)
 
